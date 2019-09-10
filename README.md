@@ -42,7 +42,7 @@ for some bash scripts to create a cluster (and destroy it after you no longer ne
 
 Steps:
 
-- make sure you have gcloud cli installed and logged in with your Pivotal account.
+- make sure you have gcloud cli installed and logged.
 - edit `vars.sh` to define the name of your cluster.
 - run `./create-gke-cluster.sh` to create a cluster.
 - run `./setup-kube-config.sh` to setup kubeconfig to fetch credentials and point to your cluster.
@@ -68,10 +68,12 @@ references to the changed name across this repo and change them as well.
 ## Testing the image
 
 *Warning:* These steps work on Linux but I suspect they may not work on Mac where
-extra complications exist because docker runs in a separate VM. 
+extra complications exist because docker runs in a separate VM. If you can't figure
+this out, you could just skip this step and move directly to deploying the image to 
+k8s.
 
-Run `./run-with-docker.sh` to run the image locally using docker. Leave the terminal
-that you started this open (if you close it the ssh daemon will be shutdown).
+Run `./run-with-docker.sh` a in terminal. This will start an ssh daemon in a docker container.
+Leave the terminal that you started this with open (if you close it the ssh daemon will be shutdown).
 
 In a new terminal determine the ip address of the container. You can use `docker ps` to find the 
 container. Then use `docker inspect` to see its details and find the ip address.
@@ -112,9 +114,9 @@ will likely see an error like this:
 ```
 
 This is expected because every time the sshd is run in a new
-container, it generates new host keys. To fix this just follow 
-the instructions printed alongside the error message to remove 
-the host from list of known hosts. E.g:
+container, it generates new host keys. To get past this error, 
+just follow  the instructions printed alongside the error 
+message to remove  the host from list of known hosts. E.g:
 
 ```
 $ ssh-keygen -f "/home/kdvolder/.ssh/known_hosts" -R "172.17.0.2"
@@ -127,7 +129,7 @@ See the folder `k8s`. To deploy everything run the script `./deploy-all.sh`.
 This will:
 
 - create a secret containing the contents of your `~/.ssh/id_rsa.pub` public
-  key file.
+  key file (so make sure you have one :-).
 - create a pod running the java-dev-env docker image in a container
 - expose the ssh daemon running in that container as a service of type `LoadBalancer`.
   This makes it accessible on a public ip address.
@@ -144,7 +146,7 @@ jde    LoadBalancer   10.75.14.143   34.82.134.71   22:30532/TCP   81s
 Note down the 'EXTERNAL-IP' address. It may not appear at first as it can take
 some time for the gke cluster to set this up.
 
-Now you can ssh into your machine from the cli:
+Now you can ssh into your remote dev machine from the cli:
 
 ```
 $ ssh root@34.82.134.71
@@ -191,4 +193,6 @@ We should discuss that :-). Some ideas:
   machine.
 - exposing boot apps run in the remote development environment so they can be
   access from a browser on the user's machine.
-- ?  
+- Other ways to take advantage of the fact that the remote host is 'inside the cluster' to achieve tighter integration of
+  tooling with the cluster environment?
+- ?
