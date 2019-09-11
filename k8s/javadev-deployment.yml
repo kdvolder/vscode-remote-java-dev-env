@@ -11,6 +11,7 @@ spec:
       labels:
         app: jde
     spec:
+      serviceAccountName: jde-service-account
       containers:
       - name: jde
         image: kdvolder/remote-java-dev-env
@@ -34,9 +35,16 @@ metadata:
 spec:
   externalTrafficPolicy: Cluster
   ports:
-  - port: 22
+  - name: ssh
+    port: 22
     protocol: TCP
     targetPort: 22
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: 8080
   selector:
     app: jde
   type: LoadBalancer
+
+
